@@ -321,6 +321,16 @@ class PydanticModelBuilder(IModelBuilder[T]):
 
         # Handle arrays by recursively processing items
         if field_schema.get("type") == "array":
+            if "prefixItems" in field_schema:
+                prefix_items = field_schema["prefixItems"]
+                tuple_types = []
+                for item_schema in prefix_items:
+                    tuple_types.append(self._get_field_type(
+                        item_schema, root_schema, allow_undefined_array_items, allow_undefined_type
+                    ))
+
+                from typing import Tuple
+                return Tuple[tuple(tuple_types)]
             items_schema = field_schema.get("items")
             if not items_schema:
                 if allow_undefined_array_items:
